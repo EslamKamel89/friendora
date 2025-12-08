@@ -1,9 +1,11 @@
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
 
-class TempExample(models.Model):
-    name = models.CharField(max_length=100)
-    created_at = models.DateTimeField(auto_now_add=True)
+class User(AbstractUser):
+    email = models.EmailField(unique=True)
+    display_name = models.CharField(max_length=100, null=True, blank=True)
+    is_verified = models.BooleanField(default=False)
 
     def __str__(self) -> str:
-        return self.name
+        return self.username or self.email
