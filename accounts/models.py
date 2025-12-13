@@ -4,6 +4,7 @@ from django.db import models
 
 
 class User(AbstractUser):
+    id: int
     email = models.EmailField(unique=True)
     display_name = models.CharField(max_length=100, null=True, blank=True)
     is_verified = models.BooleanField(default=False)
@@ -13,6 +14,7 @@ class User(AbstractUser):
 
 
 class Profile(models.Model):
+    id: int
     user = models.OneToOneField(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="profile"
     )
