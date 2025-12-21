@@ -9,7 +9,7 @@ ALLOWED_CONTENT_TYPES = ("image/jpeg", "image/png", "image/webp")
 class PostSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(read_only=True)
     image = serializers.ImageField(
-        required=True, allow_null=True, allow_empty_file=True
+        required=False, allow_null=True, allow_empty_file=True
     )
 
     class Meta:
