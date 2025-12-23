@@ -28,6 +28,7 @@ class Post(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     objects = PostManager()
     raw = models.Manager()
+    tags: list["Tag"] = models.ManyToManyField("Tag", related_name="tags", blank=True)  # type: ignore
 
     class Meta:
         ordering = ("-created_at",)
@@ -41,3 +42,13 @@ class Post(models.Model):
 
     def __str__(self) -> str:
         return f"post {self.id} by {self.author.username}"
+
+
+class Tag(models.Model):
+    id: int
+    name = models.CharField(max_length=100, unique=True, null=False)
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return self.name

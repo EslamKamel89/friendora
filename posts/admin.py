@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from posts.models import Post
+from posts.models import Post, Tag
 
 
 @admin.register(Post)
@@ -16,6 +16,8 @@ class PostAdmin(admin.ModelAdmin):
         "created_at",
         "updated_at",
     )
+    # autocomplete_fields = ("tags",)
+    filter_horizontal = ("tags",)
     # readonly_fields = ("image_preview",)
     list_display_links = ("id", "short_content")
 
@@ -27,3 +29,8 @@ class PostAdmin(admin.ModelAdmin):
             '<img src="{}" style="width:48px;height:48px;object-fit:cover;border-radius:4px;" alt="avatar"/>',
             obj.image.url,
         )
+
+
+@admin.register(Tag)
+class TagAdmin(admin.ModelAdmin):
+    search_fields = ("name",)
