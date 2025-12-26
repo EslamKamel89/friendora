@@ -48,6 +48,8 @@ class PostSerializer(serializers.ModelSerializer):
         model = Post
         fields = (
             "id",
+            "tags",
+            "tags_input",
             "author",
             "content",
             "image",
@@ -55,7 +57,7 @@ class PostSerializer(serializers.ModelSerializer):
             "created_at",
             "updated_at",
         )
-        read_only_fields = ("id", "slug", "created_at", "updated_at")
+        read_only_fields = ("id", "slug", "created_at", "updated_at", "tags")
 
     def validate_image(self, value):
         if not value:

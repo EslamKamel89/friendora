@@ -28,7 +28,7 @@ class Post(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     objects = PostManager()
     raw = models.Manager()
-    tags = models.ManyToManyField("Tag", related_name="tags", blank=True)  # type: ignore
+    tags = models.ManyToManyField("Tag", related_name="posts", blank=True)  # type: ignore
 
     class Meta:
         ordering = ("-created_at",)
