@@ -18,7 +18,7 @@ class PostSerializer(serializers.ModelSerializer):
     tags_input = serializers.ListField(
         child=serializers.CharField(),
         write_only=True,
-        required=True,
+        required=False,
     )
     image = serializers.ImageField(
         required=False,

@@ -17,9 +17,9 @@ class PostManager(models.Manager):
 
 class Post(models.Model):
     id: int
-    author: "User" = models.ForeignKey(
+    author = models.ForeignKey(
         settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="posts"
-    )  # type: ignore
+    )
     content = models.TextField()
     image = models.ImageField(upload_to="posts", blank=True, null=True)
     slug = models.SlugField(max_length=255, unique=True, blank=True)
@@ -28,7 +28,7 @@ class Post(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     objects = PostManager()
     raw = models.Manager()
-    tags = models.ManyToManyField("Tag", related_name="posts", blank=True)  # type: ignore
+    tags = models.ManyToManyField("Tag", related_name="posts", blank=True)
 
     class Meta:
         ordering = ("-created_at",)

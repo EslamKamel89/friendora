@@ -11,7 +11,7 @@ from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase, force_authenticate
 
 from accounts.models import User
-from posts.models import Post
+from posts.models import Post, Tag
 
 
 class PostBaseTest(APITestCase):
@@ -88,3 +88,79 @@ class PostPermissionTests(PostBaseTest):
 
         response = self.client.delete(self.detail_url)
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+
+class PostTagTests(PostBaseTest):
+    def setUp(self) -> None:
+        super().setUp()
+        self.client.force_authenticate(self.user)  # type: ignore
+
+    def test_create_posts_with_tags(self):
+        data = {
+            "content": "Post with tags",
+            "tags_input": ["django", "backend"],
+        }
+        res = self.client.post(self.list_url, data)
+        self.assertEqual(res.status_code, status.HTTP_201_CREATED)
+        post = Post.objects.first()
+        self.assertIsNotNone(post)
+        self.assertEqual(post.tags.count(), 2)  # type: ignore
+        self.assertTrue(Tag.objects.filter(name="django").exists())
+
+    def test_update_tags_of_post(self):
+        post = Post.objects.create(content="test update tag", author=self.user)
+        url = reverse("post-detail", args=[post.id])
+        res = self.client.patch(url, {"tags_input": ["api", "rest"]})
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(post.tags.count(), 2)
+        self.assertTrue(Tag.objects.filter(name="api").exists())
+
+
+class PostFilteringTests(PostBaseTest):
+    def setUp(self) -> None:
+        super().setUp()
+        self.client.force_authenticate(self.user)  # type: ignore
+        self.post1 = Post.objects.create(author=self.user, content="django post")
+        self.post2 = Post.objects.create(author=self.user, content="drf post")
+        tag = Tag.objects.create(name="django")
+        self.post1.tags.add(tag)
+
+    def test_filter_post_by_tag(self):
+        url = f"{self.list_url}?tags__name=django"
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(res.json()["results"]), 1)
+
+
+class PostSearchTest(PostBaseTest):
+    def setUp(self) -> None:
+        super().setUp()
+        self.client.force_authenticate(self.user)  # type: ignore
+        Post.objects.create(author=self.user, content="Learning django filters")
+        Post.objects.create(author=self.user, content="Just a random post")
+
+    def test_search_posts(self):
+        url = f"{self.list_url}?search=django"
+        res = self.client.get(url)
+        self.assertEqual(res.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(res.json()["results"]), 1)
+        self.assertIn("django", res.json()["results"][0]["content"])
+
+
+class PostPaginationTests(PostBaseTest):
+    def setUp(self) -> None:
+        super().setUp()
+        self.client.force_authenticate(self.user)  # type: ignore
+        posts = [
+            Post(content=f"Post-{i}", author=self.user, slug=f"post-{i}")
+            for i in range(10)
+        ]
+        Post.objects.bulk_create(posts)
+
+    def test_pagination(self):
+        res_page1 = self.client.get(f"{self.list_url}?page=1")
+        res_page2 = self.client.get(f"{self.list_url}?page=2")
+        self.assertEqual(len(res_page1.json()["results"]), 5)
+        self.assertEqual(len(res_page2.json()["results"]), 5)
+        self.assertEqual(res_page1.status_code, status.HTTP_200_OK)
+        self.assertEqual(res_page2.status_code, status.HTTP_200_OK)
