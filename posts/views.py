@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
+from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
@@ -8,7 +9,7 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from posts.models import Post
+from posts.models import Like, Post
 from posts.permissions import IsOwnerOrReadonly
 from posts.serializers import PostSerializer
 
@@ -25,6 +26,28 @@ class PostViewSet(ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
+
+    @action(detail=True, permission_classes=[IsAuthenticated], methods=["POST"])
+    def like(self, request: Request, pk=None):
+        post: Post = self.get_object()
+        user = request.user
+        like_object, created = Like.objects.get_or_create(user=user, post=post)
+        if not created:
+            return Response(
+                {"detail": "Already liked"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response({"detail": "Liked"}, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, permission_classes=[IsAuthenticated], methods=["POST"])
+    def unlike(self, request: Request, pk=None):
+        post: Post = self.get_object()
+        user = request.user
+        deleted, _ = Like.objects.filter(user=user, post=post).delete()
+        if deleted == 0:
+            return Response(
+                {"detail": "Not liked yet"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response({"detail": "Unliked"}, status=status.HTTP_200_OK)
 
 
 class PostListCreateApiView(GenericAPIView):

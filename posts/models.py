@@ -1,4 +1,5 @@
-from typing import TYPE_CHECKING, Iterable
+from asyncio import constants
+from typing import TYPE_CHECKING, Iterable, Self
 
 from django.conf import settings
 from django.db import models
@@ -52,3 +53,26 @@ class Tag(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+
+class LikeQuerySet(models.QuerySet):
+    def with_user_post(self) -> Self:
+        return self.select_related().select_related("post", "user")
+
+
+class Like(models.Model):
+    post = models.ForeignKey("Post", on_delete=models.CASCADE, related_name="likes")
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="likes"
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    objects = LikeQuerySet.as_manager()
+
+    def __str__(self) -> str:
+        return f"{self.user} likes {self.post} "
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["user", "post"], name="unique_user_post")
+        ]
+        ordering = ("-created_at",)

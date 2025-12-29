@@ -2,7 +2,7 @@ from typing import Required
 
 from rest_framework import serializers
 
-from posts.models import Post, Tag
+from posts.models import Like, Post, Tag
 
 MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5 MB
 ALLOWED_CONTENT_TYPES = ("image/jpeg", "image/png", "image/webp")
@@ -25,6 +25,7 @@ class PostSerializer(serializers.ModelSerializer):
         allow_null=True,
         allow_empty_file=True,
     )
+    likes_count = serializers.IntegerField(source="likes.count", read_only=True)
 
     def create(self, validated_data):
         tags_data = validated_data.pop("tags_input", [])
@@ -54,6 +55,7 @@ class PostSerializer(serializers.ModelSerializer):
             "content",
             "image",
             "slug",
+            "likes_count",
             "created_at",
             "updated_at",
         )
@@ -67,3 +69,10 @@ class PostSerializer(serializers.ModelSerializer):
         if value.content_type not in ALLOWED_CONTENT_TYPES:
             raise serializers.ValidationError(detail="unsupported image type")
         return value
+
+
+class LikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Like
+        fields = ("id", "user", "post", "created_at")
+        read_only_fields = ("id", "user", "post", "created_at")
