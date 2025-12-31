@@ -3,7 +3,7 @@ from typing import Any
 
 from rest_framework import serializers
 
-from accounts.models import User
+from accounts.models import Follow, User
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -22,3 +22,31 @@ class RegisterSerializer(serializers.ModelSerializer):
         user.display_name = validated_data.get("display_name", "")
         user.save()
         return user
+
+
+class FollowSerializer(serializers.ModelSerializer):
+    follower_username = serializers.CharField(
+        source="follower.username", read_only=True
+    )
+    following_username = serializers.CharField(
+        source="following.username", read_only=True
+    )
+
+    class Meta:
+        model = Follow
+        fields = (
+            "id",
+            "follower",
+            "follower_username",
+            "following",
+            "following_username",
+            "created_at",
+        )
+        read_only_fields = (
+            "id",
+            "follower",
+            "follower_username",
+            "following",
+            "following_username",
+            "created_at",
+        )

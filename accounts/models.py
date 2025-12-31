@@ -27,3 +27,47 @@ class Profile(models.Model):
 
     def __str__(self) -> str:
         return f"Profile of {self.user.username}"
+
+
+class FollowQuerySet(models.QuerySet):
+    def with_follower(self):
+        return self.select_related("follower")
+
+    def with_following(self):
+        return self.select_related("following")
+
+    def with_both(self):
+        return self.select_related(["follower", "following"])
+
+
+class Follow(models.Model):
+    follower = models.ForeignKey(
+        "User",
+        on_delete=models.CASCADE,
+        related_name="following_set",
+        db_index=True,
+    )  # i am following these users
+    following = models.ForeignKey(
+        "User",
+        on_delete=models.CASCADE,
+        related_name="followers_set",
+        db_index=True,
+    )  # users who follows me
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    objects = FollowQuerySet.as_manager()
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["follower", "following"], name="unique_follower_following"
+            ),
+            models.CheckConstraint(
+                check=~models.Q(follower=models.F("following")),
+                name="prevent_self_follow",
+            ),
+        ]
+        ordering = ("-created_at",)
+
+    def __str__(self) -> str:
+        return f"{self.follower} -> {self.following}"
