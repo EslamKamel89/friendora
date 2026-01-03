@@ -9,15 +9,16 @@ from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
+from common.throttle import LikeThrottle
 from posts.models import Like, Post
-from posts.permissions import IsOwnerOrReadonly
+from posts.permissions import IsAuthenticatedForUnsafeMethods, IsOwnerOrReadonly
 from posts.serializers import PostSerializer
 
 
 class PostViewSet(ModelViewSet):
     queryset = Post.objects.all().prefetch_related("tags")
     serializer_class = PostSerializer
-    permission_classes = [IsAuthenticated, IsOwnerOrReadonly]
+    permission_classes = [IsAuthenticatedForUnsafeMethods, IsOwnerOrReadonly]
     filter_backends = [DjangoFilterBackend, SearchFilter, OrderingFilter]
     filterset_fields = ["tags__name"]
     search_fields = ["content", "slug", "author__username"]
@@ -27,7 +28,12 @@ class PostViewSet(ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
 
-    @action(detail=True, permission_classes=[IsAuthenticated], methods=["POST"])
+    @action(
+        detail=True,
+        permission_classes=[IsAuthenticated],
+        methods=["POST"],
+        throttle_classes=[LikeThrottle],
+    )
     def like(self, request: Request, pk=None):
         post: Post = self.get_object()
         user = request.user
@@ -38,7 +44,12 @@ class PostViewSet(ModelViewSet):
             )
         return Response({"detail": "Liked"}, status=status.HTTP_201_CREATED)
 
-    @action(detail=True, permission_classes=[IsAuthenticated], methods=["POST"])
+    @action(
+        detail=True,
+        permission_classes=[IsAuthenticated],
+        methods=["POST"],
+        throttle_classes=[LikeThrottle],
+    )
     def unlike(self, request: Request, pk=None):
         post: Post = self.get_object()
         user = request.user

@@ -152,6 +152,16 @@ REST_FRAMEWORK = {
     ],
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
     "PAGE_SIZE": 5,
+    "DEFAULT_THROTTLE_CLASSES": [
+        "rest_framework.throttling.AnonRateThrottle",
+        "rest_framework.throttling.UserRateThrottle",
+    ],
+    "DEFAULT_THROTTLE_RATES": {
+        "anon": "30/minute",  # Rate for unauthenticated users
+        "user": "120/minute",  # Rate for authenticated users
+        "like": "10/minute",
+        "follow": "10/minute",
+    },
 }
 
 SIMPLE_JWT = {

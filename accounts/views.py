@@ -9,6 +9,7 @@ from rest_framework.viewsets import GenericViewSet
 
 from accounts.models import Follow, User
 from accounts.serializers import FollowSerializer, RegisterSerializer
+from common.throttle import FollowThrottle
 
 
 class RegisterView(CreateAPIView):
@@ -20,7 +21,7 @@ class FollowViewSet(GenericViewSet):
     queryset = User.objects.all()
     permission_classes = [IsAuthenticated]
 
-    @action(detail=True, methods=["POST"])
+    @action(detail=True, methods=["POST"], throttle_classes=[FollowThrottle])
     def follow(self, request: Request, pk=None):
         follower: User = request.user
         following: User = self.get_object()
@@ -41,7 +42,7 @@ class FollowViewSet(GenericViewSet):
 
         return Response({"detail": "Followed"}, status=status.HTTP_201_CREATED)
 
-    @action(detail=True, methods=["POST"])
+    @action(detail=True, methods=["POST"], throttle_classes=[FollowThrottle])
     def unfollow(self, request: Request, pk=None):
         follower: User = request.user
         following: User = self.get_object()
