@@ -159,8 +159,8 @@ REST_FRAMEWORK = {
     "DEFAULT_THROTTLE_RATES": {
         "anon": "30/minute",  # Rate for unauthenticated users
         "user": "120/minute",  # Rate for authenticated users
-        "like": "10/minute",
-        "follow": "10/minute",
+        "like": "30/minute",
+        "follow": "30/minute",
     },
 }
 

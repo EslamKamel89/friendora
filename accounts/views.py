@@ -66,12 +66,14 @@ class FollowViewSet(GenericViewSet):
 
     @action(detail=True, methods=["GET"])
     def followers(self, request: Request, pk=None):
+        # Who follows THIS user
         user: User = self.get_object()
         qs = user.followers_set.select_related("follower")
         return Response(FollowSerializer(qs, many=True).data)
 
     @action(detail=True, methods=["GET"])
     def following(self, request: Request, pk=None):
+        # Who THIS user follows
         user: User = self.get_object()
         qs = user.following_set.select_related("following")
         return Response(FollowSerializer(qs, many=True).data)

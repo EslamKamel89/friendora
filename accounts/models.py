@@ -41,18 +41,19 @@ class FollowQuerySet(models.QuerySet):
 
 
 class Follow(models.Model):
+    # follower <= following
     follower = models.ForeignKey(
         "User",
         on_delete=models.CASCADE,
         related_name="following_set",
         db_index=True,
-    )  # i am following these users
+    )
     following = models.ForeignKey(
         "User",
         on_delete=models.CASCADE,
         related_name="followers_set",
         db_index=True,
-    )  # users who follows me
+    )
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
 
     objects = FollowQuerySet.as_manager()

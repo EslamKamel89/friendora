@@ -57,7 +57,7 @@ class Tag(models.Model):
 
 class LikeQuerySet(models.QuerySet):
     def with_user_post(self) -> Self:
-        return self.select_related().select_related("post", "user")
+        return self.select_related("post", "user")
 
 
 class Like(models.Model):
