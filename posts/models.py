@@ -5,10 +5,8 @@ from django.conf import settings
 from django.db import models
 from django.utils import timezone
 
+from accounts.models import User
 from common.utils import unique_slug
-
-if TYPE_CHECKING:
-    from accounts.models import User
 
 
 class PostManager(models.Manager):
@@ -76,3 +74,30 @@ class Like(models.Model):
             models.UniqueConstraint(fields=["user", "post"], name="unique_user_post")
         ]
         ordering = ("-created_at",)
+
+
+class Report(models.Model):
+    class Status(models.TextChoices):
+        PENDING = ("pending", "Pending")
+        REVIEWED = ("reviewed", "Reviewed")
+        ACTION_TAKEN = ("action_taken", "Action Taken")
+
+    reporter = models.ForeignKey(User, on_delete=models.CASCADE, related_name="reports")
+    post = models.ForeignKey(Post, on_delete=models.CASCADE, related_name="reports")
+    reason = models.TextField(max_length=500)
+    status = models.CharField(
+        max_length=20,
+        choices=Status.choices,
+        default=Status.PENDING,
+    )
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["reporter", "post"], name="unique_report_per_user_per_post"
+            )
+        ]
+
+    def __str__(self) -> str:
+        return f"Report by {self.reporter_id} on post {self.post_id}"  # type: ignore

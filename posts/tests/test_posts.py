@@ -1,14 +1,11 @@
 import io
-from email import header
-from email.mime import multipart
 
 from django.core.files.uploadedfile import SimpleUploadedFile
-from django.test import TestCase
 from django.urls import reverse
 from PIL import Image
 from rest_framework import status
 from rest_framework.authtoken.models import Token
-from rest_framework.test import APITestCase, force_authenticate
+from rest_framework.test import APITestCase
 
 from accounts.models import User
 from posts.models import Post, Tag

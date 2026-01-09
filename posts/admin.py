@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.utils.html import format_html
 
 from accounts.models import Follow
-from posts.models import Like, Post, Tag
+from posts.models import Like, Post, Report, Tag
 
 
 @admin.register(Post)
@@ -39,3 +39,11 @@ class TagAdmin(admin.ModelAdmin):
 
 @admin.register(Like)
 class FollowAdmin(admin.ModelAdmin): ...
+
+
+@admin.register(Report)
+class ReportAdmin(admin.ModelAdmin):
+    list_display = ("id", "reporter", "post", "status", "created_at")
+    list_filter = ("status", "created_at")
+    search_fields = ("reason", "reporter__username")
+    ordering = ("-created_at",)

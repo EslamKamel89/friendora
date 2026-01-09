@@ -2,7 +2,7 @@ from typing import Required
 
 from rest_framework import serializers
 
-from posts.models import Like, Post, Tag
+from posts.models import Like, Post, Report, Tag
 
 MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5 MB
 ALLOWED_CONTENT_TYPES = ("image/jpeg", "image/png", "image/webp")
@@ -76,3 +76,9 @@ class LikeSerializer(serializers.ModelSerializer):
         model = Like
         fields = ("id", "user", "post", "created_at")
         read_only_fields = ("id", "user", "post", "created_at")
+
+
+class ReportCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Report
+        fields = ("post", "reason")
