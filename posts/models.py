@@ -69,7 +69,7 @@ class Like(models.Model):
     objects = LikeQuerySet.as_manager()
 
     def __str__(self) -> str:
-        return f"{self.user} likes {self.post} "
+        return f"{self.user} likes post id: {self.post.id} "
 
     class Meta:
         constraints = [

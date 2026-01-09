@@ -1,14 +1,14 @@
 from django.shortcuts import render
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.generics import CreateAPIView, GenericAPIView
+from rest_framework.generics import CreateAPIView, GenericAPIView, RetrieveUpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from accounts.models import Follow, User
-from accounts.serializers import FollowSerializer, RegisterSerializer
+from accounts.serializers import FollowSerializer, ProfileSerializer, RegisterSerializer
 from common.throttle import FollowThrottle
 
 
@@ -77,3 +77,11 @@ class FollowViewSet(GenericViewSet):
         user: User = self.get_object()
         qs = user.following_set.select_related("following")
         return Response(FollowSerializer(qs, many=True).data)
+
+
+class MeProfileView(RetrieveUpdateAPIView):
+    serializer_class = ProfileSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        return self.request.user.profile  # type: ignore

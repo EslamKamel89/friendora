@@ -1,7 +1,8 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from posts.models import Post, Tag
+from accounts.models import Follow
+from posts.models import Like, Post, Tag
 
 
 @admin.register(Post)
@@ -34,3 +35,7 @@ class PostAdmin(admin.ModelAdmin):
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
     search_fields = ("name",)
+
+
+@admin.register(Like)
+class FollowAdmin(admin.ModelAdmin): ...

@@ -10,5 +10,6 @@ urlpatterns: list[URLPattern] = [
     path("register/", views.RegisterView.as_view(), name="register"),
     path("login/", TokenObtainPairView.as_view(), name="login"),
     path("refresh/", TokenRefreshView.as_view(), name="refresh"),
+    path("profile/me", views.MeProfileView.as_view(), name="my-profile"),
 ]
 urlpatterns += router.urls

@@ -4,7 +4,7 @@ from django.db.models.query import QuerySet
 from django.http import HttpRequest
 from django.utils.html import format_html
 
-from accounts.models import Profile, User
+from accounts.models import Follow, Profile, User
 
 admin.site.site_header = "Friendora Admin"
 admin.site.site_title = "Friendora Admin"
@@ -32,7 +32,7 @@ class UserAdmin(DjangoUserAdmin):
 class ProfileAdmin(admin.ModelAdmin):
     list_display = ("id", "user", "user_email", "avatar_thumb", "created_at")
     list_display_links = ("id", "user")
-    readonly_fields = ("user", "avatar_preview")
+    readonly_fields = ("avatar_preview", "user")
 
     def user_email(self, obj):
         return obj.user.email
@@ -57,3 +57,7 @@ class ProfileAdmin(admin.ModelAdmin):
         qs = super().get_queryset(request)
         qs.select_related("user")
         return qs
+
+
+@admin.register(Follow)
+class FollowAdmin(admin.ModelAdmin): ...

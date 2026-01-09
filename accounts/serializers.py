@@ -1,9 +1,10 @@
 from dataclasses import fields
 from typing import Any
 
+from django.core.files.uploadedfile import UploadedFile
 from rest_framework import serializers
 
-from accounts.models import Follow, User
+from accounts.models import Follow, Profile, User
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -50,3 +51,23 @@ class FollowSerializer(serializers.ModelSerializer):
             "following_username",
             "created_at",
         )
+
+
+class ProfileSerializer(serializers.ModelSerializer):
+    avatar = serializers.ImageField(required=False)
+
+    class Meta:
+        model = Profile
+        fields = ("avatar", "bio", "created_at", "updated_at")
+        read_only_fields = ("created_at", "updated_at")
+
+    def validate_avatar(self, value: UploadedFile) -> UploadedFile:
+        max_size = 2 * 1024 * 1024
+        if value.size > max_size:
+            raise serializers.ValidationError(detail="Avatar size must be under 2MB")
+        valid_types = ["image/jpeg", "image/png", "image/webp"]
+        if value.content_type not in valid_types:
+            raise serializers.ValidationError(
+                detail="Only JPEG, PNG, or WEBP images are allowed."
+            )
+        return value

@@ -8,6 +8,7 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     display_name = models.CharField(max_length=100, null=True, blank=True)
     is_verified = models.BooleanField(default=False)
+    profile: "Profile"
 
     def __str__(self) -> str:
         return self.username or self.email
@@ -41,7 +42,11 @@ class FollowQuerySet(models.QuerySet):
 
 
 class Follow(models.Model):
-    # follower <= following
+    # User A ---- follows ----> User B
+    # follower → the user who initiates the action
+    # following → the user being followed
+    # user.following_set.all()   # users I follow
+    # user.followers_set.all()   # users who follow me
     follower = models.ForeignKey(
         "User",
         on_delete=models.CASCADE,
@@ -71,4 +76,4 @@ class Follow(models.Model):
         ordering = ("-created_at",)
 
     def __str__(self) -> str:
-        return f"{self.follower} -> {self.following}"
+        return f"{self.follower} => {self.following}"
