@@ -11,8 +11,10 @@ report_router = DefaultRouter()
 report_router.register("reports", ReportViewSet, basename="reports")
 urlpatterns: list[URLPattern] = (
     [
-        # path("", views.PostListCreateApiView.as_view()),
-        # path("<int:pk>/", views.PostRetrieveUpdateDestroyApiView.as_view()),
+        path(
+            "admin-reports/posts/<int:post_id>/summary",
+            views.ReportSummaryView.as_view(),
+        )
     ]
     + report_router.urls
     + post_router.urls

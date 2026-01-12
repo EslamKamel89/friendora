@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
@@ -7,12 +7,14 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
 from common.throttle import LikeThrottle
-from posts.models import Like, Post
+from posts.models import Like, Post, Report
 from posts.permissions import IsAuthenticatedForUnsafeMethods, IsOwnerOrReadonly
-from posts.serializers import PostSerializer
+from posts.serializers import PostSerializer, ReportSummarySerializer
+from posts.types import ReportSummaryInput
 
 
 class PostViewSet(ModelViewSet):
@@ -111,3 +113,20 @@ class PostRetrieveUpdateDestroyApiView(GenericAPIView):
         post = self.get_object()
         post.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class ReportSummaryView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request: Request, post_id: int):
+        post = get_object_or_404(Post, pk=post_id)
+        reports = Report.objects.filter(post=post, status=Report.Status.PENDING)
+        data: ReportSummaryInput = {
+            "post": post,
+            "post_id": post.id,
+            "post_author": post.author.username,
+            "post_content": post.content,
+            "reports": reports,
+        }
+        serializer = ReportSummarySerializer(data)
+        return Response(serializer.data)

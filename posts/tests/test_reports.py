@@ -44,7 +44,4 @@ class ReportPermissionsTest(APITestCase):
         res = self.client.post(
             self.reports_url, {"post": post.id, "reason": "staff reporting"}
         )
-        print("+++++++++++++++++++++++++++++++")
-        print(res.json())
-        print("+++++++++++++++++++++++++++++++")
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)

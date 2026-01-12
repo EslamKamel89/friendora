@@ -1,8 +1,10 @@
-from typing import Required
+from datetime import datetime
+from typing import Optional, Required
 
 from rest_framework import serializers
 
 from posts.models import Like, Post, Report, Tag
+from posts.types import ReportSummaryInput
 
 MAX_IMAGE_SIZE = 5 * 1024 * 1024  # 5 MB
 ALLOWED_CONTENT_TYPES = ("image/jpeg", "image/png", "image/webp")
@@ -82,3 +84,32 @@ class ReportCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Report
         fields = ("post", "reason")
+
+
+class ReportSummarySerializer(serializers.Serializer):
+    post_id = serializers.IntegerField()
+    post_author = serializers.CharField()
+    post_content = serializers.CharField()
+    reports_count = serializers.SerializerMethodField()
+    report_reasons = serializers.SerializerMethodField()
+    last_reported_at = serializers.SerializerMethodField()
+    is_action_taken = serializers.SerializerMethodField()
+
+    def get_is_action_taken(self, obj: ReportSummaryInput) -> bool:
+        return obj["reports"].filter(status=Report.Status.ACTION_TAKEN).exists()
+
+    def get_reports_count(self, obj: ReportSummaryInput) -> int:
+        return obj["reports"].count()
+
+    def get_report_reasons(self, obj: ReportSummaryInput) -> list[str]:
+        # return [report.reason for report in obj["reports"]]
+        return list(obj["reports"].values_list("reason", flat=True))
+
+    def get_last_reported_at(self, obj: ReportSummaryInput) -> Optional[datetime]:
+        latest = obj["reports"].order_by("-created_at").first()
+        return latest.created_at if latest else None
+
+    def to_representation(self, instance: ReportSummaryInput):
+        data = super().to_representation(instance)
+        data["reports_count"] = len(data["report_reasons"])
+        return data

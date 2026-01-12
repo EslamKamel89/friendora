@@ -21,8 +21,8 @@ class IsNotPostOwner(BasePermission):
         return request.user != obj.author
 
 
-class IsNotStaff(BasePermission):
-    def has_permission(self, request, view):  # type: ignore
+class StaffReadOnly(BasePermission):
+    def has_permission(self, request: Request, view):  # type: ignore
         if request.method in SAFE_METHODS:
             return True
         return not request.user.is_staff

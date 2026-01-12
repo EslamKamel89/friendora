@@ -3,14 +3,14 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
 from posts.models import Post, Report
-from posts.permissions import IsNotPostOwner, IsNotStaff
+from posts.permissions import IsNotPostOwner, StaffReadOnly
 from posts.serializers import ReportCreateSerializer
 
 
 class ReportViewSet(ModelViewSet):
     queryset = Report.objects.all()
     serializer_class = ReportCreateSerializer
-    permission_classes = [IsAuthenticated, IsNotStaff]
+    permission_classes = [IsAuthenticated, StaffReadOnly]
 
     def perform_create(self, serializer: ReportCreateSerializer):
         post = serializer.validated_data.get("post")  # type: ignore
