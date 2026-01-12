@@ -113,3 +113,13 @@ class ReportSummarySerializer(serializers.Serializer):
         data = super().to_representation(instance)
         data["reports_count"] = len(data["report_reasons"])
         return data
+
+
+class ReportModerationSerializer(serializers.Serializer):
+    status = serializers.ChoiceField(Report.Status.choices)
+
+    def update(self, instance: Report, validated_data):
+        status = validated_data.get("status")
+        instance.status = status
+        instance.save(update_fields=["status"])
+        return instance

@@ -13,7 +13,11 @@ from rest_framework.viewsets import ModelViewSet
 from common.throttle import LikeThrottle
 from posts.models import Like, Post, Report
 from posts.permissions import IsAuthenticatedForUnsafeMethods, IsOwnerOrReadonly
-from posts.serializers import PostSerializer, ReportSummarySerializer
+from posts.serializers import (
+    PostSerializer,
+    ReportModerationSerializer,
+    ReportSummarySerializer,
+)
 from posts.types import ReportSummaryInput
 
 
@@ -129,4 +133,18 @@ class ReportSummaryView(APIView):
             "reports": reports,
         }
         serializer = ReportSummarySerializer(data)
+        return Response(serializer.data)
+
+
+class ReportModerationView(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = ReportModerationSerializer
+
+    def patch(self, request: Request, report_id: int):
+        report = get_object_or_404(Report, pk=report_id)
+        serializer = self.get_serializer(
+            instance=report, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
         return Response(serializer.data)

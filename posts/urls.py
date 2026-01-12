@@ -14,7 +14,11 @@ urlpatterns: list[URLPattern] = (
         path(
             "admin-reports/posts/<int:post_id>/summary",
             views.ReportSummaryView.as_view(),
-        )
+        ),
+        path(
+            "admin-report/posts/<int:report_id>/moderate",
+            views.ReportModerationView.as_view(),
+        ),
     ]
     + report_router.urls
     + post_router.urls
