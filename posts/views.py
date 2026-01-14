@@ -1,3 +1,4 @@
+from django.core.cache import cache
 from django.shortcuts import get_object_or_404, render
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
@@ -10,6 +11,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import ModelViewSet
 
+from common.cache_keys import CacheKeys
 from common.throttle import LikeThrottle
 from posts.models import Like, Post, Report
 from posts.permissions import IsAuthenticatedForUnsafeMethods, IsOwnerOrReadonly
@@ -123,6 +125,10 @@ class ReportSummaryView(APIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request: Request, post_id: int):
+        cache_key = CacheKeys.pending_report_summary(post_id)
+        cached = cache.get(cache_key)
+        if cached is not None:
+            return Response(cached)
         post = get_object_or_404(Post, pk=post_id)
         reports = Report.objects.filter(post=post, status=Report.Status.PENDING)
         data: ReportSummaryInput = {
@@ -133,6 +139,7 @@ class ReportSummaryView(APIView):
             "reports": reports,
         }
         serializer = ReportSummarySerializer(data)
+        cache.set(key=cache_key, value=serializer.data, timeout=60)
         return Response(serializer.data)
 
 
